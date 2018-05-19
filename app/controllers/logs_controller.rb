@@ -96,7 +96,7 @@ class LogsController < ApplicationController
       @transport_years << log.year unless @transport_years.include?(log.year)
       @transport_per_year[log.name] = [] if @transport_per_year[log.name].nil?
     end
-    @transport_per_year.keys.each do |key|
+    @transport_per_year.each_key do |key|
       @transport_per_year[key] = @transport_years.collect{ |_y| 0 }
     end
     @transport_data.each do |log|
@@ -283,7 +283,6 @@ class LogsController < ApplicationController
       format.json { render json: { error: 0, message: flash[:notice] } }
       format.html { request.env['HTTP_REFERER'].present? ? redirect_to(:back) : redirect_to(open_logs_path) }
     end
-
   end
 
   # can be given a single id or a list of ids
@@ -401,7 +400,7 @@ class LogsController < ApplicationController
 
   def parse_and_create_log_parts(params, log)
     ret = []
-    params['log_parts']&.each{ |_dc, lpdata|
+    params['log_parts'].each_value{ |_dc, lpdata|
       lpdata['weight'] = nil if lpdata['weight'].strip == ''
       lpdata['count'] = nil if lpdata['count'].strip == ''
       next if lpdata['id'].nil? and lpdata['weight'].nil? and lpdata['count'].nil?

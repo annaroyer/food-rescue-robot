@@ -110,5 +110,4 @@ class AbsencesController < ApplicationController
   def admin_only
     redirect_to(root_path) unless current_volunteer.any_admin?
   end
-
 end
