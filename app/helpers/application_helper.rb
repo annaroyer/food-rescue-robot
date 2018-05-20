@@ -9,14 +9,17 @@ module ApplicationHelper
     }.compact
   end
 
+  def days_ago(shift_date)
+    return 'today' if shift_date.today?
+    distance = distance_of_time_in_words(Time.zone.today, shift_date)
+    return "#{distance} ago" if shift_date.past?
+    return "#{distance} from now" if shift_date.future?
+  end
+
   def readable_time_until shift
-    ret = shift.when.strftime('%a %b %e') + ' ('
-    ret += 'today' if shift.when.today?
-    ret += distance_of_time_in_words(Time.zone.today, shift.when) + ' ago' if shift.when.past?
-    ret += distance_of_time_in_words(Time.zone.today, shift.when) + ' from now' if shift.when.future?
-    ret += ')'
-    ret += " <br>between #{readable_start_time(shift.schedule_chain)} and #{readable_stop_time(shift.schedule_chain)}" if shift.schedule_chain
-    ret.html_safe
+    time = "#{shift.when.strftime('%a %b %e')} (#{days_ago(shift.when)})}"
+    time += "\n#{readable_start_time(shift.schedule_chain)} and #{readable_stop_time(shift.schedule_chain)}" if shift.schedule_chain
+    time
   end
 
   def readable_start_time schedule

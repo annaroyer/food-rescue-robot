@@ -81,7 +81,7 @@ class Location < ActiveRecord::Base
   end
 
   def hours_on_day(index)
-    [ read_day_info('day'+index.to_s+'_start') , read_day_info('day'+index.to_s+'_end') ]
+    [read_day_info("day#{index}_start"), read_day_info("day#{index}_end")]
   end
 
   def open_on_day?(index)
@@ -135,14 +135,18 @@ class Location < ActiveRecord::Base
 
   private
 
+  def day_length
+    hours_on_day(index).reduce(:-)
+  end
+
+  def wrong_day_order?(index)
+    open_on_day?(index) && day_length(index).negative?
+  end
+
   def detailed_hours_cannot_end_before_start
     (0..6).each do |index|
-      if open_on_day? index
-        prefix = 'day'+index.to_s
-        if read_day_info(prefix + '_start') > read_day_info(prefix + '_end')
-          errors.add(prefix+'_status', 'must have an end time AFTER the start time')
-        end
-      end
+      message = 'must have an end time AFTER the start time'
+      errors.add("day#{index}_status", message) if wrong_day_order?(index)
     end
   end
 

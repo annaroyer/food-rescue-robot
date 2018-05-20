@@ -132,14 +132,8 @@ class LogsController < ApplicationController
     when 'transport'
       rq = ''
       wq = ''
-      unless params[:region_id].nil?
-        rq = "AND region_id=#{params[:region_id].to_i}"
-      end
-      unless params[:timespan].nil?
-        if params[:timespan] == 'month'
-          wq = "AND \"when\" > NOW() - interval '1 month'"
-        end
-      end
+      rq = "AND region_id=#{params[:region_id].to_i}" if params[:region_id]
+      wq = "AND \"when\" > NOW() - interval '1 month'" if params[:timespan] == 'month'
       noncar = Log.where("complete AND transport_type_id IN (SELECT id FROM transport_types WHERE name != 'Car') #{rq} #{wq}").count.to_f
       car = Log.where("complete AND transport_type_id IN (SELECT id FROM transport_types WHERE name = 'Car') #{rq} #{wq}").count.to_f
       render :text => "#{100.0*noncar/(noncar+car)} #{100.0*car/(noncar+car)}"
@@ -176,9 +170,7 @@ class LogsController < ApplicationController
       render :new and return
     end
 
-    if @scale_types.any? && @log.scale_type_id.nil?
-      @log.scale_type_id = @region.scale_types.first.id
-    end
+    @log.scale_type_id ||= @region.scale_types.first.id if @scale_types.any?
 
     authorize! :create, @log
     parse_and_create_log_parts(params, @log)

@@ -81,24 +81,13 @@ class ScheduleChain < ActiveRecord::Base
     schedules
   end
 
-  def self.for_location(loc)
-    if loc.donor?
-      ScheduleChain.for_donor(loc)
-    else
-      ScheduleChain.for_recipient(loc)
-    end
-  end
-
-  def self.for_donor(d)
-    Schedule.joins(:location).where('locations.location_type = ? AND locations.id = ?', Location::LOCATION_TYPES.invert['Donor'], d.id).collect(&:schedule_chain).uniq
-  end
-
-  def self.for_recipient(r)
-    Schedule.joins(:location).where('NOT locations.location_type = ? AND locations.id = ?', Location::LOCATION_TYPES.invert['Recipient'], r.id).collect(&:schedule_chain).uniq
+  def self.for_location(location)
+    return if location.type == 1
+    joins(:schedules).where(schedules: { location_id: location.id }).uniq
   end
 
   def food_types
-    schedules.collect(&:food_types).flatten.uniq
+    FoodType.joins(:schedules).where(schedules: { schedule_chain_id: id }).uniq
   end
 
   def volunteers?

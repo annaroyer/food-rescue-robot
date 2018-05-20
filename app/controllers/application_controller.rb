@@ -68,13 +68,11 @@ class ApplicationController < ActionController::Base
   # https://gist.github.com/josevalim/fb706b1e933ef01e4fb6
   def authenticate_user_from_token!
     user_email = params['volunteer_email']
-    return if user_email.nil?
-
-    user = Volunteer.find_by_email(user_email)
     token = params['volunteer_token']
-    return if token.nil?
-    if user and Devise.secure_compare(user.authentication_token, token)
-      sign_in user, store: false
-    end
+    return unless user_email && token
+
+    user = Volunteer.find_by_email(params['volunteer_email'])
+    clearance = Devise.secure_compare(user.authentication_token, token) if user
+    sign_in user, store: false if clearance
   end
 end
